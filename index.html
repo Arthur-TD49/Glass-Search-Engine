@@ -3,124 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glass Search Engine</title>
+    <title>Glass Search Engine Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        :root { --blur-val: 25px; }
+        
         body {
             font-family: 'SF Pro Display', -apple-system, sans-serif;
             background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
-            height: 100vh;
-            overflow: hidden;
-            transition: filter 0.5s ease;
+            min-height: 100vh;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(var(--blur-val));
+            -webkit-backdrop-filter: blur(var(--blur-val));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
         }
 
-        .tab-content { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-content { display: none; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         .tab-content.active { display: flex; }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            from { opacity: 0; transform: translateY(40px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .nav-btn { position: relative; transition: all 0.3s ease; }
-        .nav-btn.active { color: #007AFF; }
+        .nav-btn { position: relative; opacity: 0.6; transition: all 0.3s; }
+        .nav-btn:hover { opacity: 1; }
+        .nav-btn.active { opacity: 1; color: #60a5fa; }
+        
         .nav-btn.active::after {
-            content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
-            width: 4px; height: 4px; background: #007AFF; border-radius: 50%;
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            width: 12px; height: 3px; background: #60a5fa; border-radius: 10px;
         }
 
-        /* Mode Sombre Dynamique */
-        body.dark-mode { filter: brightness(0.8) contrast(1.1); }
-        body.dark-mode .glass { background: rgba(0, 0, 0, 0.4); color: white; }
+        body.dark-mode { filter: brightness(0.7) contrast(1.1); }
+        body.dark-mode .glass { background: rgba(0, 0, 0, 0.4); border-color: rgba(255,255,255,0.1); }
+        
+        input::placeholder { color: rgba(255,255,255,0.5); }
     </style>
 </head>
-<body class="flex flex-col items-center">
+<body class="flex flex-col items-center text-white">
 
-    <nav class="fixed top-8 glass px-6 py-2 rounded-2xl flex items-center gap-6 z-50">
-        <button onclick="showTab('search')" id="btn-search" class="nav-btn active font-medium">Recherche</button>
-        <button onclick="showTab('settings')" id="btn-settings" class="nav-btn font-medium">Réglages</button>
-        <button onclick="showTab('info')" id="btn-info" class="nav-btn font-medium">À propos</button>
-        <button onclick="showTab('updates')" id="btn-updates" class="nav-btn font-medium text-red-500">Mise à jour</button>
+    <nav class="fixed top-6 glass px-8 py-3 rounded-2xl flex items-center gap-8 z-50">
+        <button onclick="showTab('search')" id="btn-search" class="nav-btn active font-semibold">Recherche</button>
+        <button onclick="showTab('settings')" id="btn-settings" class="nav-btn font-semibold">Réglages</button>
+        <button onclick="showTab('info')" id="btn-info" class="nav-btn font-semibold">À propos</button>
+        <button onclick="showTab('updates')" id="btn-updates" class="nav-btn font-semibold text-orange-400">Mise à jour</button>
     </nav>
 
-    <main id="search" class="tab-content active flex-col items-center mt-48 w-full px-4">
-        <h1 class="text-7xl font-bold text-white mb-12 drop-shadow-lg tracking-tighter">Glass.</h1>
-        <div class="glass w-full max-w-2xl rounded-[2rem] flex items-center p-2 group transition-all focus-within:ring-4 ring-blue-400/30">
+    <main id="search" class="tab-content active flex-col items-center justify-center min-h-screen w-full px-4">
+        <h1 class="text-8xl font-bold mb-12 drop-shadow-2xl tracking-tighter animate-pulse">Glass<span class="text-blue-400">.</span></h1>
+        
+        <div class="glass w-full max-w-3xl rounded-[2.5rem] flex items-center p-3 group transition-all duration-500 focus-within:scale-105 focus-within:shadow-blue-500/20 shadow-2xl">
             <input type="text" id="searchInput" 
-                   placeholder="Rechercher avec Google..." 
-                   class="bg-transparent w-full px-8 py-5 outline-none text-xl text-white placeholder-white/70"
+                   placeholder="Que souhaitez-vous trouver ?" 
+                   class="bg-transparent w-full px-8 py-6 outline-none text-2xl"
                    onkeypress="if(event.key === 'Enter') performSearch()">
-            <button onclick="performSearch()" class="bg-white/90 hover:bg-white text-black px-8 py-4 rounded-2xl font-bold transition-all active:scale-95">
-                Rechercher
+            <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-10 py-5 rounded-[1.8rem] font-bold transition-all active:scale-90 shadow-lg">
+                Explorer
             </button>
         </div>
-        <p class="mt-6 text-white/60 text-sm">Appuyez sur Entrée pour lancer l'exploration</p>
+        
+        <div class="flex gap-4 mt-10">
+            <button onclick="quickSearch('YouTube')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">YouTube</button>
+            <button onclick="quickSearch('GitHub')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">GitHub</button>
+            <button onclick="quickSearch('ChatGPT')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">AI Chat</button>
+        </div>
     </main>
 
-    <main id="settings" class="tab-content flex-col items-center mt-40 w-full max-w-md px-4">
-        <div class="glass w-full rounded-[2.5rem] p-8">
-            <h2 class="text-3xl font-bold mb-8">Réglages</h2>
-            <div class="space-y-6">
-                <div class="flex justify-between items-center bg-white/10 p-4 rounded-2xl">
-                    <span>Mode Sombre</span>
-                    <button onclick="toggleDarkMode()" class="w-12 h-6 bg-gray-400 rounded-full relative">
-                        <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all"></div>
+    <main id="settings" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
+        <div class="glass w-full rounded-[3rem] p-10">
+            <h2 class="text-4xl font-bold mb-10">Réglages</h2>
+            <div class="space-y-8">
+                <div class="flex justify-between items-center bg-white/5 p-5 rounded-3xl">
+                    <span class="text-lg">Mode Sombre Immersion</span>
+                    <button onclick="toggleDarkMode()" class="w-14 h-8 bg-gray-600 rounded-full relative transition-colors duration-500" id="toggle-bg">
+                        <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all duration-300"></div>
                     </button>
                 </div>
-                <div class="flex justify-between items-center bg-white/10 p-4 rounded-2xl">
-                    <span>Effet de flou</span>
-                    <input type="range" class="accent-blue-500">
+                <div class="space-y-4 bg-white/5 p-6 rounded-3xl">
+                    <div class="flex justify-between">
+                        <span class="text-lg">Intensité du flou</span>
+                        <span id="blur-val-display" class="font-mono text-blue-400">25px</span>
+                    </div>
+                    <input type="range" min="0" max="60" value="25" 
+                           class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                           oninput="updateBlur(this.value)">
                 </div>
             </div>
         </div>
     </main>
 
-    <main id="info" class="tab-content flex-col items-center mt-40 w-full max-w-md px-4">
-        <div class="glass w-full rounded-[2.5rem] p-10 text-center">
-            <div class="w-24 h-24 bg-gradient-to-tr from-blue-400 to-emerald-400 rounded-3xl mx-auto mb-6 flex items-center justify-center text-white text-5xl font-bold shadow-xl">G</div>
-            <h2 class="text-3xl font-bold">Glass Engine</h2>
-            <p class="text-gray-200 mt-4 leading-relaxed">Une interface inspirée par le design Liquid Glass d'Apple, conçue pour la rapidité et l'élégance.</p>
-            <p class="mt-8 text-xs opacity-50 uppercase tracking-widest">Version 1.0.4 • 2026</p>
+    <main id="info" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
+        <div class="glass w-full rounded-[3rem] p-12 text-center">
+            <div class="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-white text-6xl font-bold shadow-2xl rotate-3 hover:rotate-0 transition-transform cursor-pointer">G</div>
+            <h2 class="text-4xl font-bold">Glass Engine</h2>
+            <p class="text-gray-300 mt-6 text-lg leading-relaxed font-light">L'interface du futur, minimaliste et transparente. Conçue pour une concentration absolue.</p>
+            <div class="mt-10 pt-8 border-t border-white/10 flex justify-around opacity-60">
+                <div><p class="text-xs uppercase">Build</p><p class="font-bold">2026.1</p></div>
+                <div><p class="text-xs uppercase">Engine</p><p class="font-bold">V8 Turbo</p></div>
+                <div><p class="text-xs uppercase">Status</p><p class="font-bold text-green-400">Stable</p></div>
+            </div>
         </div>
     </main>
 
-    <main id="updates" class="tab-content flex-col items-center mt-40 w-full max-w-md px-4">
-        <div class="glass w-full rounded-[2.5rem] p-8">
+    <main id="updates" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
+        <div class="glass w-full rounded-[3rem] p-10">
             <div id="update-status">
-                <h2 class="text-2xl font-bold mb-2">Mise à jour disponible</h2>
-                <p class="text-sm opacity-80 mb-6">GlassOS 1.1 - 450 Mo</p>
-                <div class="bg-white/10 p-5 rounded-2xl mb-8">
-                    <ul class="text-sm space-y-2 opacity-90">
-                        <li>• Nouvel algorithme de recherche</li>
-                        <li>• Optimisation du flou gaussien</li>
-                        <li>• Correction de bugs mineurs</li>
-                    </ul>
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="flex h-3 w-3 relative">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
+                    </span>
+                    <h2 class="text-2xl font-bold">Mise à jour système</h2>
                 </div>
-                <button onclick="startUpdate()" id="updateBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all">Installer maintenant</button>
+                <p class="text-gray-300 mb-8">Version 1.1 disponible pour installation immédiate (450 Mo).</p>
+                <div class="bg-black/20 p-6 rounded-3xl mb-10 space-y-3 border border-white/5">
+                    <p class="text-sm flex items-center gap-2"><span class="text-blue-400">●</span> Nouveau flou Gaussien adaptatif</p>
+                    <p class="text-sm flex items-center gap-2"><span class="text-blue-400">●</span> Support Multi-moteurs</p>
+                </div>
+                <button onclick="startUpdate()" id="updateBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-95">Installer GlassOS 1.1</button>
             </div>
         </div>
     </main>
 
     <script>
-        // 1. FONCTION DE RECHERCHE RÉELLE
+        // Recherche
         function performSearch() {
             const query = document.getElementById('searchInput').value;
-            if (query.trim() !== "") {
+            if (query.trim()) {
                 window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
             }
         }
 
-        // 2. NAVIGATION ENTRE ONGLETS
+        function quickSearch(target) {
+            document.getElementById('searchInput').value = target;
+            performSearch();
+        }
+
+        // Navigation
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -129,41 +156,49 @@
             document.getElementById('btn-' + tabId).classList.add('active');
         }
 
-        // 3. MODE SOMBRE
+        // Mode Sombre
         let isDark = false;
         function toggleDarkMode() {
             isDark = !isDark;
             document.body.classList.toggle('dark-mode');
             const dot = document.getElementById('toggle-dot');
-            dot.style.left = isDark ? '26px' : '4px';
+            const bg = document.getElementById('toggle-bg');
+            dot.style.transform = isDark ? 'translateX(24px)' : 'translateX(0px)';
+            bg.style.backgroundColor = isDark ? '#3b82f6' : '#4b5563';
         }
 
-        // 4. SIMULATION DE MISE À JOUR
+        // Contrôle du Flou
+        function updateBlur(val) {
+            document.documentElement.style.setProperty('--blur-val', val + 'px');
+            document.getElementById('blur-val-display').innerText = val + 'px';
+        }
+
+        // Simulation Update
         function startUpdate() {
             const btn = document.getElementById('updateBtn');
             const status = document.getElementById('update-status');
             btn.disabled = true;
-            btn.innerHTML = "Téléchargement... 0%";
-            btn.classList.replace('bg-blue-500', 'bg-gray-500');
+            btn.classList.replace('bg-blue-600', 'bg-gray-700');
 
             let progress = 0;
             const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 10) + 5;
+                progress += Math.floor(Math.random() * 8) + 2;
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
                     status.innerHTML = `
-                        <div class="text-center py-10">
-                            <div class="text-5xl mb-4">✅</div>
-                            <h2 class="text-2xl font-bold">Système à jour</h2>
-                            <p class="opacity-70 mt-2">Redémarrage non nécessaire.</p>
+                        <div class="text-center py-8 animate-bounce">
+                            <div class="text-6xl mb-6">✨</div>
+                            <h2 class="text-3xl font-bold mb-2">Système à jour</h2>
+                            <p class="opacity-60">GlassOS est maintenant en version 1.1</p>
                         </div>
                     `;
-                    document.getElementById('btn-updates').classList.remove('text-red-500');
+                    document.getElementById('btn-updates').className = "nav-btn font-semibold text-green-400";
                     document.getElementById('btn-updates').innerText = "À jour";
+                } else {
+                    btn.innerHTML = `Mise à jour en cours... ${progress}%`;
                 }
-                btn.innerHTML = `Téléchargement... ${progress}%`;
-            }, 300);
+            }, 150);
         }
     </script>
 </body>
