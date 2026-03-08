@@ -14,11 +14,11 @@
             background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background 0.8s ease, filter 0.5s ease;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(var(--blur-val));
             -webkit-backdrop-filter: blur(var(--blur-val));
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -36,16 +36,24 @@
         .nav-btn { position: relative; opacity: 0.6; transition: all 0.3s; }
         .nav-btn:hover { opacity: 1; }
         .nav-btn.active { opacity: 1; color: #60a5fa; }
-        
         .nav-btn.active::after {
             content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
             width: 12px; height: 3px; background: #60a5fa; border-radius: 10px;
         }
 
-        body.dark-mode { filter: brightness(0.7) contrast(1.1); }
-        body.dark-mode .glass { background: rgba(0, 0, 0, 0.4); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode { filter: brightness(0.8) contrast(1.1); }
+        body.dark-mode .glass { background: rgba(0, 0, 0, 0.5); }
         
-        input::placeholder { color: rgba(255,255,255,0.5); }
+        .wp-option { width: 60px; height: 60px; border-radius: 12px; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent; object-fit: cover; }
+        .wp-option:hover { transform: scale(1.1); }
+        .wp-option.selected { border-color: #60a5fa; }
+
+        #ai-window { display: none; flex-direction: column; width: 350px; height: 500px; position: fixed; bottom: 100px; right: 24px; border-radius: 24px; z-index: 1000; overflow: hidden; }
+        #ai-window.open { display: flex; animation: slideUp 0.4s ease; }
+        
+        .message { padding: 10px 15px; border-radius: 18px; max-width: 85%; margin-bottom: 10px; font-size: 0.9rem; line-height: 1.4; }
+        .user-msg { background: #3b82f6; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .bot-msg { background: rgba(255,255,255,0.1); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body class="flex flex-col items-center text-white">
@@ -58,18 +66,11 @@
     </nav>
 
     <main id="search" class="tab-content active flex-col items-center justify-center min-h-screen w-full px-4">
-        <h1 class="text-8xl font-bold mb-12 drop-shadow-2xl tracking-tighter animate-pulse">Glass<span class="text-blue-400">.</span></h1>
-        
-        <div class="glass w-full max-w-3xl rounded-[2.5rem] flex items-center p-3 group transition-all duration-500 focus-within:scale-105 focus-within:shadow-blue-500/20 shadow-2xl">
-            <input type="text" id="searchInput" 
-                   placeholder="Que souhaitez-vous trouver ?" 
-                   class="bg-transparent w-full px-8 py-6 outline-none text-2xl"
-                   onkeypress="if(event.key === 'Enter') performSearch()">
-            <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-10 py-5 rounded-[1.8rem] font-bold transition-all active:scale-90 shadow-lg">
-                Explorer
-            </button>
+        <h1 class="text-8xl font-bold mb-12 drop-shadow-2xl tracking-tighter">Glass<span class="text-blue-400">.</span></h1>
+        <div class="glass w-full max-w-3xl rounded-[2.5rem] flex items-center p-3 group transition-all duration-500 focus-within:scale-105 shadow-2xl">
+            <input type="text" id="searchInput" placeholder="Que souhaitez-vous trouver ?" class="bg-transparent w-full px-8 py-6 outline-none text-2xl" onkeypress="if(event.key === 'Enter') performSearch()">
+            <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-10 py-5 rounded-[1.8rem] font-bold transition-all active:scale-90">Explorer</button>
         </div>
-        
         <div class="flex gap-4 mt-10">
             <button onclick="quickSearch('YouTube')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">YouTube</button>
             <button onclick="quickSearch('GitHub')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">GitHub</button>
@@ -87,14 +88,23 @@
                         <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all duration-300"></div>
                     </button>
                 </div>
+
+                <div class="bg-white/5 p-6 rounded-3xl">
+                    <p class="text-lg mb-4">Choisir un fond d'écran</p>
+                    <div class="flex gap-3 overflow-x-auto pb-2">
+                        <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200" class="wp-option selected" onclick="changeBG(this.src, this)">
+                        <img src="https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=200" class="wp-option" onclick="changeBG(this.src, this)">
+                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200" class="wp-option" onclick="changeBG(this.src, this)">
+                        <img src="https://images.unsplash.com/photo-1502481851512-e9e2529bbbf9?w=200" class="wp-option" onclick="changeBG(this.src, this)">
+                    </div>
+                </div>
+
                 <div class="space-y-4 bg-white/5 p-6 rounded-3xl">
                     <div class="flex justify-between">
                         <span class="text-lg">Intensité du flou</span>
                         <span id="blur-val-display" class="font-mono text-blue-400">25px</span>
                     </div>
-                    <input type="range" min="0" max="60" value="25" 
-                           class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                           oninput="updateBlur(this.value)">
+                    <input type="range" min="0" max="60" value="25" class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="updateBlur(this.value)">
                 </div>
             </div>
         </div>
@@ -104,7 +114,7 @@
         <div class="glass w-full rounded-[3rem] p-12 text-center">
             <div class="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-white text-6xl font-bold shadow-2xl rotate-3 hover:rotate-0 transition-transform cursor-pointer">G</div>
             <h2 class="text-4xl font-bold">Glass Engine</h2>
-            <p class="text-gray-300 mt-6 text-lg leading-relaxed font-light">L'interface du futur, minimaliste et transparente. Conçue pour une concentration absolue.</p>
+            <p class="text-gray-300 mt-6 text-lg leading-relaxed font-light">L'interface du futur, minimaliste et transparente.</p>
             <div class="mt-10 pt-8 border-t border-white/10 flex justify-around opacity-60">
                 <div><p class="text-xs uppercase">Build</p><p class="font-bold">2026.1</p></div>
                 <div><p class="text-xs uppercase">Engine</p><p class="font-bold">V8 Turbo</p></div>
@@ -133,30 +143,52 @@
         </div>
     </main>
 
+    <div id="ai-window" class="glass">
+        <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <span class="font-bold flex items-center gap-2">✨ Glass Assistant</span>
+            <button onclick="toggleAI()" class="opacity-50 hover:opacity-100">✕</button>
+        </div>
+        <div id="chat-history" class="flex-1 overflow-y-auto p-4 flex flex-col">
+            <div class="message bot-msg">Bonjour ! Je suis l'IA Glass. Posez-moi une question !</div>
+        </div>
+        <div class="p-4 bg-white/5">
+            <input type="text" id="ai-input" placeholder="Écrivez un message..." 
+                   class="bg-white/10 w-full px-4 py-3 rounded-xl outline-none border border-white/10 focus:border-blue-500 transition-all"
+                   onkeypress="if(event.key === 'Enter') sendAIMessage()">
+        </div>
+    </div>
+
+    <button onclick="toggleAI()" class="fixed bottom-6 right-6 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all z-[1001]">
+        <span class="text-2xl">🤖</span>
+    </button>
+
     <script>
-        // Recherche
-        function performSearch() {
-            const query = document.getElementById('searchInput').value;
-            if (query.trim()) {
-                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-            }
+        // --- Navigation ---
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
         }
 
+        // --- Recherche ---
+        function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        }
         function quickSearch(target) {
             document.getElementById('searchInput').value = target;
             performSearch();
         }
 
-        // Navigation
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('active');
+        // --- Réglages & Fond d'écran ---
+        function changeBG(url, el) {
+            const highResUrl = url.replace('&w=200', '&w=2070');
+            document.body.style.backgroundImage = `url('${highResUrl}')`;
+            document.querySelectorAll('.wp-option').forEach(img => img.classList.remove('selected'));
+            el.classList.add('selected');
         }
 
-        // Mode Sombre
         let isDark = false;
         function toggleDarkMode() {
             isDark = !isDark;
@@ -167,38 +199,69 @@
             bg.style.backgroundColor = isDark ? '#3b82f6' : '#4b5563';
         }
 
-        // Contrôle du Flou
         function updateBlur(val) {
             document.documentElement.style.setProperty('--blur-val', val + 'px');
             document.getElementById('blur-val-display').innerText = val + 'px';
         }
 
-        // Simulation Update
+        // --- Système de Mise à jour ---
         function startUpdate() {
             const btn = document.getElementById('updateBtn');
             const status = document.getElementById('update-status');
             btn.disabled = true;
             btn.classList.replace('bg-blue-600', 'bg-gray-700');
-
             let progress = 0;
             const interval = setInterval(() => {
                 progress += Math.floor(Math.random() * 8) + 2;
                 if (progress >= 100) {
-                    progress = 100;
                     clearInterval(interval);
-                    status.innerHTML = `
-                        <div class="text-center py-8 animate-bounce">
-                            <div class="text-6xl mb-6">✨</div>
-                            <h2 class="text-3xl font-bold mb-2">Système à jour</h2>
-                            <p class="opacity-60">GlassOS est maintenant en version 1.1</p>
-                        </div>
-                    `;
+                    status.innerHTML = `<div class="text-center py-8 animate-bounce"><div class="text-6xl mb-6">✨</div><h2 class="text-3xl font-bold mb-2">Système à jour</h2><p class="opacity-60">GlassOS 1.1 est prêt.</p></div>`;
                     document.getElementById('btn-updates').className = "nav-btn font-semibold text-green-400";
                     document.getElementById('btn-updates').innerText = "À jour";
-                } else {
-                    btn.innerHTML = `Mise à jour en cours... ${progress}%`;
-                }
+                } else { btn.innerHTML = `Installation... ${progress}%`; }
             }, 150);
+        }
+
+        // --- IA Chat ---
+        function toggleAI() {
+            document.getElementById('ai-window').classList.toggle('open');
+            document.getElementById('ai-input').focus();
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('ai-input');
+            const history = document.getElementById('chat-history');
+            const text = input.value.trim();
+
+            if (text !== "") {
+                // Message Utilisateur
+                const userDiv = document.createElement('div');
+                userDiv.className = 'message user-msg';
+                userDiv.textContent = text;
+                history.appendChild(userDiv);
+                input.value = "";
+
+                // Scroll
+                history.scrollTop = history.scrollHeight;
+
+                // Réponse IA simulée après 1 seconde
+                setTimeout(() => {
+                    const botDiv = document.createElement('div');
+                    botDiv.className = 'message bot-msg';
+                    botDiv.textContent = generateAIResponse(text);
+                    history.appendChild(botDiv);
+                    history.scrollTop = history.scrollHeight;
+                }, 1000);
+            }
+        }
+
+        function generateAIResponse(input) {
+            input = input.toLowerCase();
+            if (input.includes("bonjour")) return "Bonjour ! Comment puis-je vous aider dans votre navigation ?";
+            if (input.includes("fond d'écran")) return "Vous pouvez changer le fond d'écran dans l'onglet 'Réglages'.";
+            if (input.includes("qui es-tu")) return "Je suis Glass AI, votre assistant intégré à cette interface minimaliste.";
+            if (input.includes("meteo") || input.includes("météo")) return "Il semble faire un temps magnifique derrière vos fenêtres translucides !";
+            return "C'est une question intéressante. Je peux vous aider à chercher cela sur le web si vous voulez !";
         }
     </script>
 </body>
