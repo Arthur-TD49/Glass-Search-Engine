@@ -5,185 +5,248 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Glass Search Engine Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --blur-val: 25px; }
+        :root { 
+            --blur-val: 20px; 
+            --accent: #60a5fa;
+        }
         
         body {
-            font-family: 'SF Pro Display', -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
-            transition: background 0.8s ease, filter 0.5s ease;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
+        }
+
+        /* Grain Overlay pour le look premium */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 1;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(var(--blur-val));
-            -webkit-backdrop-filter: blur(var(--blur-val));
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(var(--blur-val)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--blur-val)) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
         }
 
-        .tab-content { display: none; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-content { display: none; animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); position: relative; z-index: 2; }
         .tab-content.active { display: flex; }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        .nav-btn { position: relative; opacity: 0.6; transition: all 0.3s; }
-        .nav-btn:hover { opacity: 1; }
-        .nav-btn.active { opacity: 1; color: #60a5fa; }
+        .nav-btn { position: relative; opacity: 0.5; transition: all 0.4s; }
+        .nav-btn:hover { opacity: 1; transform: translateY(-1px); }
+        .nav-btn.active { opacity: 1; color: var(--accent); }
         .nav-btn.active::after {
-            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
-            width: 12px; height: 3px; background: #60a5fa; border-radius: 10px;
+            content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 4px; background: var(--accent); border-radius: 10px;
+            box-shadow: 0 0 15px var(--accent);
         }
 
-        body.dark-mode { filter: brightness(0.8) contrast(1.1); }
-        body.dark-mode .glass { background: rgba(0, 0, 0, 0.5); }
+        .dark-mode-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.3); 
+            pointer-events: none; opacity: 0; transition: 0.5s; z-index: 0;
+        }
+        body.dark-mode .dark-mode-overlay { opacity: 1; }
         
-        .wp-option { width: 60px; height: 60px; border-radius: 12px; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent; object-fit: cover; }
-        .wp-option:hover { transform: scale(1.1); }
-        .wp-option.selected { border-color: #60a5fa; }
+        .wp-option { 
+            width: 80px; height: 80px; border-radius: 16px; cursor: pointer; 
+            transition: 0.3s; border: 3px solid transparent; object-fit: cover; 
+        }
+        .wp-option:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .wp-option.selected { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
 
-        #ai-window { display: none; flex-direction: column; width: 350px; height: 500px; position: fixed; bottom: 100px; right: 24px; border-radius: 24px; z-index: 1000; overflow: hidden; }
-        #ai-window.open { display: flex; animation: slideUp 0.4s ease; }
+        #ai-window { 
+            display: none; flex-direction: column; width: 380px; height: 550px; 
+            position: fixed; bottom: 100px; right: 24px; border-radius: 28px; 
+            z-index: 1000; overflow: hidden;
+        }
+        #ai-window.open { display: flex; animation: slideUp 0.5s ease; }
         
-        .message { padding: 10px 15px; border-radius: 18px; max-width: 85%; margin-bottom: 10px; font-size: 0.9rem; line-height: 1.4; }
-        .user-msg { background: #3b82f6; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .bot-msg { background: rgba(255,255,255,0.1); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        .message { padding: 12px 16px; border-radius: 20px; max-width: 85%; margin-bottom: 12px; font-size: 0.95rem; }
+        .user-msg { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .bot-msg { background: rgba(255,255,255,0.1); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+
+        input::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: var(--accent); cursor: pointer; box-shadow: 0 0 10px var(--accent);
+        }
     </style>
 </head>
 <body class="flex flex-col items-center text-white">
+    <div class="dark-mode-overlay"></div>
 
-    <nav class="fixed top-6 glass px-8 py-3 rounded-2xl flex items-center gap-8 z-50">
-        <button onclick="showTab('search')" id="btn-search" class="nav-btn active font-semibold">Recherche</button>
-        <button onclick="showTab('settings')" id="btn-settings" class="nav-btn font-semibold">Réglages</button>
-        <button onclick="showTab('info')" id="btn-info" class="nav-btn font-semibold">À propos</button>
-        <button onclick="showTab('updates')" id="btn-updates" class="nav-btn font-semibold text-orange-400">Mise à jour</button>
+    <nav class="fixed top-8 glass px-8 py-4 rounded-3xl flex items-center gap-10 z-50">
+        <button onclick="showTab('search')" id="btn-search" class="nav-btn active font-bold">Explorer</button>
+        <button onclick="showTab('settings')" id="btn-settings" class="nav-btn font-bold">Réglages</button>
+        <button onclick="showTab('info')" id="btn-info" class="nav-btn font-bold">À propos</button>
+        <button onclick="showTab('updates')" id="btn-updates" class="nav-btn font-bold text-orange-400">Système</button>
     </nav>
 
     <main id="search" class="tab-content active flex-col items-center justify-center min-h-screen w-full px-4">
-        <h1 class="text-8xl font-bold mb-12 drop-shadow-2xl tracking-tighter">Glass<span class="text-blue-400">.</span></h1>
-        <div class="glass w-full max-w-3xl rounded-[2.5rem] flex items-center p-3 group transition-all duration-500 focus-within:scale-105 shadow-2xl">
-            <input type="text" id="searchInput" placeholder="Que souhaitez-vous trouver ?" class="bg-transparent w-full px-8 py-6 outline-none text-2xl" onkeypress="if(event.key === 'Enter') performSearch()">
-            <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-10 py-5 rounded-[1.8rem] font-bold transition-all active:scale-90">Explorer</button>
+        <h1 class="text-9xl font-extrabold mb-14 drop-shadow-2xl tracking-tighter select-none">
+            Glass<span class="text-blue-400 animate-pulse">.</span>
+        </h1>
+        <div class="glass w-full max-w-3xl rounded-[2.8rem] flex items-center p-3 group transition-all duration-700 focus-within:ring-4 ring-blue-500/20 shadow-2xl">
+            <input type="text" id="searchInput" autofocus placeholder="Que cherchez-vous aujourd'hui ?" class="bg-transparent w-full px-8 py-6 outline-none text-2xl placeholder:text-white/40" onkeypress="if(event.key === 'Enter') performSearch()">
+            <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-12 py-5 rounded-[2rem] font-extrabold transition-all active:scale-95 shadow-lg shadow-blue-500/30">
+                Lancer
+            </button>
         </div>
-        <div class="flex gap-4 mt-10">
-            <button onclick="quickSearch('YouTube')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">YouTube</button>
-            <button onclick="quickSearch('GitHub')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">GitHub</button>
-            <button onclick="quickSearch('ChatGPT')" class="glass px-6 py-2 rounded-full text-sm hover:bg-white/10 transition">AI Chat</button>
+        <div class="flex gap-4 mt-12">
+            <button onclick="quickSearch('Google')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Google</button>
+            <button onclick="quickSearch('YouTube')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">YouTube</button>
+            <button onclick="quickSearch('Dribbble')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Design</button>
         </div>
     </main>
 
-    <main id="settings" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
-        <div class="glass w-full rounded-[3rem] p-10">
-            <h2 class="text-4xl font-bold mb-10">Réglages</h2>
-            <div class="space-y-8">
-                <div class="flex justify-between items-center bg-white/5 p-5 rounded-3xl">
-                    <span class="text-lg">Mode Sombre Immersion</span>
-                    <button onclick="toggleDarkMode()" class="w-14 h-8 bg-gray-600 rounded-full relative transition-colors duration-500" id="toggle-bg">
-                        <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all duration-300"></div>
+    <main id="settings" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-xl px-4">
+        <div class="glass w-full rounded-[3.5rem] p-12">
+            <h2 class="text-4xl font-extrabold mb-10">Interface</h2>
+            
+            <div class="space-y-10">
+                <div class="flex justify-between items-center bg-white/5 p-6 rounded-[2rem] hover:bg-white/10 transition">
+                    <div>
+                        <p class="font-bold text-lg">Mode Immersion</p>
+                        <p class="text-sm opacity-50">Assombrit l'arrière-plan</p>
+                    </div>
+                    <button onclick="toggleDarkMode()" class="w-16 h-9 bg-gray-600 rounded-full relative transition-colors duration-500" id="toggle-bg">
+                        <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-7 h-7 rounded-full transition-all duration-300"></div>
                     </button>
                 </div>
 
-                <div class="bg-white/5 p-6 rounded-3xl">
-                    <p class="text-lg mb-4">Choisir un fond d'écran</p>
-                    <div class="flex gap-3 overflow-x-auto pb-2">
+                <div class="bg-white/5 p-8 rounded-[2rem]">
+                    <p class="font-bold text-lg mb-6">Arrière-plans Premium</p>
+                    <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
                         <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200" class="wp-option selected" onclick="changeBG(this.src, this)">
-                        <img src="https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=200" class="wp-option" onclick="changeBG(this.src, this)">
+                        <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=200" class="wp-option" onclick="changeBG(this.src, this)">
                         <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200" class="wp-option" onclick="changeBG(this.src, this)">
-                        <img src="https://images.unsplash.com/photo-1502481851512-e9e2529bbbf9?w=200" class="wp-option" onclick="changeBG(this.src, this)">
+                        <img src="https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=200" class="wp-option" onclick="changeBG(this.src, this)">
                     </div>
                 </div>
 
-                <div class="space-y-4 bg-white/5 p-6 rounded-3xl">
-                    <div class="flex justify-between">
-                        <span class="text-lg">Intensité du flou</span>
-                        <span id="blur-val-display" class="font-mono text-blue-400">25px</span>
+                <div class="bg-white/5 p-8 rounded-[2rem]">
+                    <div class="flex justify-between mb-6">
+                        <span class="font-bold text-lg">Densité du flou</span>
+                        <span id="blur-val-display" class="font-mono text-blue-400 font-bold">20px</span>
                     </div>
-                    <input type="range" min="0" max="60" value="25" class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="updateBlur(this.value)">
+                    <input type="range" min="0" max="80" value="20" class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer" oninput="updateBlur(this.value)">
                 </div>
-            </div>
-        </div>
-    </main>
-
-    <main id="info" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
-        <div class="glass w-full rounded-[3rem] p-12 text-center">
-            <div class="w-28 h-28 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-white text-6xl font-bold shadow-2xl rotate-3 hover:rotate-0 transition-transform cursor-pointer">G</div>
-            <h2 class="text-4xl font-bold">Glass Engine</h2>
-            <p class="text-gray-300 mt-6 text-lg leading-relaxed font-light">L'interface du futur, minimaliste et transparente.</p>
-            <div class="mt-10 pt-8 border-t border-white/10 flex justify-around opacity-60">
-                <div><p class="text-xs uppercase">Build</p><p class="font-bold">2026.1</p></div>
-                <div><p class="text-xs uppercase">Engine</p><p class="font-bold">V8 Turbo</p></div>
-                <div><p class="text-xs uppercase">Status</p><p class="font-bold text-green-400">Stable</p></div>
             </div>
         </div>
     </main>
 
     <main id="updates" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
-        <div class="glass w-full rounded-[3rem] p-10">
-            <div id="update-status">
-                <div class="flex items-center gap-4 mb-6">
-                    <span class="flex h-3 w-3 relative">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-                    </span>
-                    <h2 class="text-2xl font-bold">Mise à jour système</h2>
+        <div class="glass w-full rounded-[3.5rem] p-12 text-center">
+            <div id="update-container">
+                <div class="w-20 h-20 bg-orange-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <span class="text-4xl animate-bounce">🚀</span>
                 </div>
-                <p class="text-gray-300 mb-8">Version 1.1 disponible pour installation immédiate (450 Mo).</p>
-                <div class="bg-black/20 p-6 rounded-3xl mb-10 space-y-3 border border-white/5">
-                    <p class="text-sm flex items-center gap-2"><span class="text-blue-400">●</span> Nouveau flou Gaussien adaptatif</p>
-                    <p class="text-sm flex items-center gap-2"><span class="text-blue-400">●</span> Support Multi-moteurs</p>
+                <h2 class="text-3xl font-bold mb-2">GlassOS 2.0</h2>
+                <p class="opacity-60 mb-8 text-balance">Une mise à jour majeure est disponible pour améliorer la fluidité et la sécurité.</p>
+                
+                <div id="progress-bar-container" class="hidden w-full bg-white/10 h-4 rounded-full mb-8 overflow-hidden">
+                    <div id="progress-fill" class="h-full bg-blue-500 transition-all duration-300 w-0"></div>
                 </div>
-                <button onclick="startUpdate()" id="updateBtn" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-95">Installer GlassOS 1.1</button>
+
+                <button onclick="startUpdate()" id="updateBtn" class="w-full bg-white text-black hover:bg-blue-400 hover:text-white py-5 rounded-2xl font-black transition-all transform active:scale-95 shadow-xl">
+                    Installer maintenant
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <main id="info" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
+        <div class="glass w-full rounded-[3.5rem] p-12 text-center">
+            <div class="w-32 h-32 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-white text-7xl font-black shadow-2xl rotate-3">G</div>
+            <h2 class="text-4xl font-extrabold italic">Glass Engine</h2>
+            <p class="text-white/60 mt-6 text-lg leading-relaxed px-4 font-medium">L'esthétique de la transparence poussée à son paroxysme.</p>
+            <div class="mt-12 pt-8 border-t border-white/10 grid grid-cols-3 gap-4">
+                <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Version</p><p class="font-bold">2.4.0</p></div>
+                <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Kernel</p><p class="font-bold">Quantum</p></div>
+                <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Latency</p><p class="font-bold text-green-400">12ms</p></div>
             </div>
         </div>
     </main>
 
     <div id="ai-window" class="glass">
-        <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-            <span class="font-bold flex items-center gap-2">✨ Glass Assistant</span>
-            <button onclick="toggleAI()" class="opacity-50 hover:opacity-100">✕</button>
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5 backdrop-blur-xl">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="font-black text-sm tracking-tight uppercase">Glass Assistant v4</span>
+            </div>
+            <button onclick="toggleAI()" class="opacity-30 hover:opacity-100 transition-opacity">✕</button>
         </div>
-        <div id="chat-history" class="flex-1 overflow-y-auto p-4 flex flex-col">
-            <div class="message bot-msg">Bonjour ! Je suis l'IA Glass. Posez-moi une question !</div>
+        <div id="chat-history" class="flex-1 overflow-y-auto p-6 flex flex-col space-y-4 no-scrollbar">
+            <div class="message bot-msg">Bienvenue. Comment puis-je optimiser votre expérience Glass aujourd'hui ?</div>
         </div>
-        <div class="p-4 bg-white/5">
-            <input type="text" id="ai-input" placeholder="Écrivez un message..." 
-                   class="bg-white/10 w-full px-4 py-3 rounded-xl outline-none border border-white/10 focus:border-blue-500 transition-all"
-                   onkeypress="if(event.key === 'Enter') sendAIMessage()">
+        <div class="p-6 bg-white/5 border-t border-white/5">
+            <div class="relative">
+                <input type="text" id="ai-input" placeholder="Posez-moi n'importe quoi..." 
+                       class="bg-white/5 w-full px-6 py-4 rounded-2xl outline-none border border-white/10 focus:border-blue-500/50 transition-all text-sm"
+                       onkeypress="if(event.key === 'Enter') sendAIMessage()">
+            </div>
         </div>
     </div>
 
-    <button onclick="toggleAI()" class="fixed bottom-6 right-6 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all z-[1001]">
-        <span class="text-2xl">🤖</span>
+    <button onclick="toggleAI()" class="fixed bottom-8 right-8 w-18 h-18 bg-blue-600 p-5 rounded-3xl flex items-center justify-center shadow-2xl hover:scale-110 active:scale-90 transition-all z-[1001] group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
     </button>
 
     <script>
-        // --- Navigation ---
+        // --- Navigation améliorée ---
         function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => {
+                c.classList.remove('active');
+            });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            
+            const target = document.getElementById(tabId);
+            target.classList.add('active');
             document.getElementById('btn-' + tabId).classList.add('active');
+
+            if(tabId === 'search') {
+                setTimeout(() => document.getElementById('searchInput').focus(), 100);
+            }
         }
 
         // --- Recherche ---
         function performSearch() {
             const query = document.getElementById('searchInput').value;
-            if (query.trim()) window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            if (query.trim()) {
+                // Animation de sortie avant redirection
+                document.getElementById('search').style.opacity = '0';
+                document.getElementById('search').style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }, 400);
+            }
         }
+
         function quickSearch(target) {
             document.getElementById('searchInput').value = target;
             performSearch();
         }
 
-        // --- Réglages & Fond d'écran ---
+        // --- Personnalisation ---
         function changeBG(url, el) {
-            const highResUrl = url.replace('&w=200', '&w=2070');
+            const highResUrl = url.split('?')[0] + '?q=80&w=2070&auto=format&fit=crop';
             document.body.style.backgroundImage = `url('${highResUrl}')`;
             document.querySelectorAll('.wp-option').forEach(img => img.classList.remove('selected'));
             el.classList.add('selected');
@@ -195,7 +258,7 @@
             document.body.classList.toggle('dark-mode');
             const dot = document.getElementById('toggle-dot');
             const bg = document.getElementById('toggle-bg');
-            dot.style.transform = isDark ? 'translateX(24px)' : 'translateX(0px)';
+            dot.style.transform = isDark ? 'translateX(28px)' : 'translateX(0px)';
             bg.style.backgroundColor = isDark ? '#3b82f6' : '#4b5563';
         }
 
@@ -204,28 +267,40 @@
             document.getElementById('blur-val-display').innerText = val + 'px';
         }
 
-        // --- Système de Mise à jour ---
+        // --- Système de Mise à jour (Simulation réelle) ---
         function startUpdate() {
             const btn = document.getElementById('updateBtn');
-            const status = document.getElementById('update-status');
-            btn.disabled = true;
-            btn.classList.replace('bg-blue-600', 'bg-gray-700');
+            const progressContainer = document.getElementById('progress-bar-container');
+            const progressFill = document.getElementById('progress-fill');
+            
+            btn.classList.add('hidden');
+            progressContainer.classList.remove('hidden');
+            
             let progress = 0;
             const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 8) + 2;
+                progress += Math.random() * 15;
                 if (progress >= 100) {
+                    progress = 100;
                     clearInterval(interval);
-                    status.innerHTML = `<div class="text-center py-8 animate-bounce"><div class="text-6xl mb-6">✨</div><h2 class="text-3xl font-bold mb-2">Système à jour</h2><p class="opacity-60">GlassOS 1.1 est prêt.</p></div>`;
-                    document.getElementById('btn-updates').className = "nav-btn font-semibold text-green-400";
-                    document.getElementById('btn-updates').innerText = "À jour";
-                } else { btn.innerHTML = `Installation... ${progress}%`; }
-            }, 150);
+                    setTimeout(() => {
+                        document.getElementById('update-container').innerHTML = `
+                            <div class="animate-bounce mb-6 text-6xl">💎</div>
+                            <h2 class="text-3xl font-bold">Système Optimisé</h2>
+                            <p class="opacity-60">GlassOS est à jour (v2.0.1)</p>
+                        `;
+                        document.getElementById('btn-updates').classList.replace('text-orange-400', 'text-green-400');
+                        document.getElementById('btn-updates').innerText = "À jour";
+                    }, 500);
+                }
+                progressFill.style.width = progress + '%';
+            }, 400);
         }
 
         // --- IA Chat ---
         function toggleAI() {
-            document.getElementById('ai-window').classList.toggle('open');
-            document.getElementById('ai-input').focus();
+            const win = document.getElementById('ai-window');
+            win.classList.toggle('open');
+            if(win.classList.contains('open')) document.getElementById('ai-input').focus();
         }
 
         function sendAIMessage() {
@@ -234,34 +309,36 @@
             const text = input.value.trim();
 
             if (text !== "") {
-                // Message Utilisateur
                 const userDiv = document.createElement('div');
-                userDiv.className = 'message user-msg';
+                userDiv.className = 'message user-msg font-semibold';
                 userDiv.textContent = text;
                 history.appendChild(userDiv);
                 input.value = "";
-
-                // Scroll
                 history.scrollTop = history.scrollHeight;
 
-                // Réponse IA simulée après 1 seconde
+                // Effet "Thinking"
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message bot-msg italic opacity-50';
+                typingDiv.textContent = "Analyse en cours...";
+                history.appendChild(typingDiv);
+
                 setTimeout(() => {
+                    history.removeChild(typingDiv);
                     const botDiv = document.createElement('div');
-                    botDiv.className = 'message bot-msg';
+                    botDiv.className = 'message bot-msg font-medium';
                     botDiv.textContent = generateAIResponse(text);
                     history.appendChild(botDiv);
                     history.scrollTop = history.scrollHeight;
-                }, 1000);
+                }, 1200);
             }
         }
 
         function generateAIResponse(input) {
             input = input.toLowerCase();
-            if (input.includes("bonjour")) return "Bonjour ! Comment puis-je vous aider dans votre navigation ?";
-            if (input.includes("fond d'écran")) return "Vous pouvez changer le fond d'écran dans l'onglet 'Réglages'.";
-            if (input.includes("qui es-tu")) return "Je suis Glass AI, votre assistant intégré à cette interface minimaliste.";
-            if (input.includes("meteo") || input.includes("météo")) return "Il semble faire un temps magnifique derrière vos fenêtres translucides !";
-            return "C'est une question intéressante. Je peux vous aider à chercher cela sur le web si vous voulez !";
+            if (input.includes("bonjour") || input.includes("hello")) return "Bonjour. Je suis prêt à traiter vos requêtes.";
+            if (input.includes("fond") || input.includes("design")) return "L'esthétique peut être ajustée dans les Réglages. Préférez-vous le minimalisme ?";
+            if (input.includes("merci")) return "À votre service.";
+            return "Commande reconnue. Voulez-vous que j'approfondisse cette recherche sur le réseau ?";
         }
     </script>
 </body>
