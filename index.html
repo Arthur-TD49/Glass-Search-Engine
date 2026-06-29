@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glass Search Engine Pro</title>
+    <title>Glass Search Engine Pro - Internal Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -21,45 +21,44 @@
             overflow-x: hidden;
         }
 
-        /* Grain Overlay pour le look premium */
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-            opacity: 0.05;
+            opacity: 0.04;
             pointer-events: none;
             z-index: 1;
         }
 
         .glass {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.07);
             backdrop-filter: blur(var(--blur-val)) saturate(180%);
             -webkit-backdrop-filter: blur(var(--blur-val)) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
         }
 
-        .tab-content { display: none; animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); position: relative; z-index: 2; }
+        .tab-content { display: none; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); position: relative; z-index: 2; }
         .tab-content.active { display: flex; }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px) scale(0.98); filter: blur(10px); }
+            from { opacity: 0; transform: translateY(20px) scale(0.99); filter: blur(5px); }
             to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        .nav-btn { position: relative; opacity: 0.5; transition: all 0.4s; }
+        .nav-btn { position: relative; opacity: 0.6; transition: all 0.3s; }
         .nav-btn:hover { opacity: 1; transform: translateY(-1px); }
         .nav-btn.active { opacity: 1; color: var(--accent); }
         .nav-btn.active::after {
             content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-            width: 20px; height: 4px; background: var(--accent); border-radius: 10px;
-            box-shadow: 0 0 15px var(--accent);
+            width: 16px; height: 4px; background: var(--accent); border-radius: 10px;
+            box-shadow: 0 0 12px var(--accent);
         }
 
         .dark-mode-overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.3); 
-            pointer-events: none; opacity: 0; transition: 0.5s; z-index: 0;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45); 
+            pointer-events: none; opacity: 0; transition: 0.6s; z-index: 0;
         }
         body.dark-mode .dark-mode-overlay { opacity: 1; }
         
@@ -75,20 +74,31 @@
             position: fixed; bottom: 100px; right: 24px; border-radius: 28px; 
             z-index: 1000; overflow: hidden;
         }
-        #ai-window.open { display: flex; animation: slideUp 0.5s ease; }
+        #ai-window.open { display: flex; animation: slideUp 0.4s ease; }
         
         .message { padding: 12px 16px; border-radius: 20px; max-width: 85%; margin-bottom: 12px; font-size: 0.95rem; }
-        .user-msg { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .user-msg { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); color: white; }
         .bot-msg { background: rgba(255,255,255,0.1); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
 
-        input::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%;
             background: var(--accent); cursor: pointer; box-shadow: 0 0 10px var(--accent);
         }
     </style>
 </head>
-<body class="flex flex-col items-center text-white">
+<body class="flex flex-col items-center text-white min-h-screen">
     <div class="dark-mode-overlay"></div>
+
+    <div class="fixed top-6 right-6 glass px-5 py-3 rounded-2xl flex items-center gap-3 z-50 text-sm font-medium">
+        <span class="text-xl animate-pulse">☀️</span>
+        <div>
+            <p id="weather-clock" class="font-bold font-mono">12:00</p>
+            <p class="text-[11px] opacity-60">Paris · Ensoleillé · 22°C</p>
+        </div>
+    </div>
 
     <nav class="fixed top-8 glass px-8 py-4 rounded-3xl flex items-center gap-10 z-50">
         <button onclick="showTab('search')" id="btn-search" class="nav-btn active font-bold">Explorer</button>
@@ -97,90 +107,108 @@
         <button onclick="showTab('updates')" id="btn-updates" class="nav-btn font-bold text-orange-400">Système</button>
     </nav>
 
-    <main id="search" class="tab-content active flex-col items-center justify-center min-h-screen w-full px-4">
-        <h1 class="text-9xl font-extrabold mb-14 drop-shadow-2xl tracking-tighter select-none">
-            Glass<span class="text-blue-400 animate-pulse">.</span>
-        </h1>
-        <div class="glass w-full max-w-3xl rounded-[2.8rem] flex items-center p-3 group transition-all duration-700 focus-within:ring-4 ring-blue-500/20 shadow-2xl">
-            <input type="text" id="searchInput" autofocus placeholder="Que cherchez-vous aujourd'hui ?" class="bg-transparent w-full px-8 py-6 outline-none text-2xl placeholder:text-white/40" onkeypress="if(event.key === 'Enter') performSearch()">
-            <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-12 py-5 rounded-[2rem] font-extrabold transition-all active:scale-95 shadow-lg shadow-blue-500/30">
-                Lancer
-            </button>
-        </div>
-        <div class="flex gap-4 mt-12">
-            <button onclick="quickSearch('Google')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Google</button>
-            <button onclick="quickSearch('YouTube')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">YouTube</button>
-            <button onclick="quickSearch('Dribbble')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Design</button>
-        </div>
-    </main>
-
-    <main id="settings" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-xl px-4">
-        <div class="glass w-full rounded-[3.5rem] p-12">
-            <h2 class="text-4xl font-extrabold mb-10">Interface</h2>
+    <main class="w-full">
+        <section id="search" class="tab-content active flex flex-col items-center justify-center min-h-screen w-full px-4">
+            <h1 class="text-7xl md:text-9xl font-extrabold mb-14 drop-shadow-2xl tracking-tighter select-none text-center">
+                Glass<span class="text-blue-400 animate-pulse">.</span>
+            </h1>
             
-            <div class="space-y-10">
-                <div class="flex justify-between items-center bg-white/5 p-6 rounded-[2rem] hover:bg-white/10 transition">
-                    <div>
-                        <p class="font-bold text-lg">Mode Immersion</p>
-                        <p class="text-sm opacity-50">Assombrit l'arrière-plan</p>
-                    </div>
-                    <button onclick="toggleDarkMode()" class="w-16 h-9 bg-gray-600 rounded-full relative transition-colors duration-500" id="toggle-bg">
-                        <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-7 h-7 rounded-full transition-all duration-300"></div>
-                    </button>
-                </div>
-
-                <div class="bg-white/5 p-8 rounded-[2rem]">
-                    <p class="font-bold text-lg mb-6">Arrière-plans Premium</p>
-                    <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-                        <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200" class="wp-option selected" onclick="changeBG(this.src, this)">
-                        <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=200" class="wp-option" onclick="changeBG(this.src, this)">
-                        <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200" class="wp-option" onclick="changeBG(this.src, this)">
-                        <img src="https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=200" class="wp-option" onclick="changeBG(this.src, this)">
-                    </div>
-                </div>
-
-                <div class="bg-white/5 p-8 rounded-[2rem]">
-                    <div class="flex justify-between mb-6">
-                        <span class="font-bold text-lg">Densité du flou</span>
-                        <span id="blur-val-display" class="font-mono text-blue-400 font-bold">20px</span>
-                    </div>
-                    <input type="range" min="0" max="80" value="20" class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer" oninput="updateBlur(this.value)">
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <main id="updates" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
-        <div class="glass w-full rounded-[3.5rem] p-12 text-center">
-            <div id="update-container">
-                <div class="w-20 h-20 bg-orange-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <span class="text-4xl animate-bounce">🚀</span>
-                </div>
-                <h2 class="text-3xl font-bold mb-2">GlassOS 2.0</h2>
-                <p class="opacity-60 mb-8 text-balance">Une mise à jour majeure est disponible pour améliorer la fluidité et la sécurité.</p>
-                
-                <div id="progress-bar-container" class="hidden w-full bg-white/10 h-4 rounded-full mb-8 overflow-hidden">
-                    <div id="progress-fill" class="h-full bg-blue-500 transition-all duration-300 w-0"></div>
-                </div>
-
-                <button onclick="startUpdate()" id="updateBtn" class="w-full bg-white text-black hover:bg-blue-400 hover:text-white py-5 rounded-2xl font-black transition-all transform active:scale-95 shadow-xl">
-                    Installer maintenant
+            <div class="glass w-full max-w-3xl rounded-[2.8rem] flex items-center p-3 group transition-all duration-500 focus-within:ring-4 ring-blue-500/20 shadow-2xl mb-6">
+                <input type="text" id="searchInput" autofocus placeholder="Que cherchez-vous aujourd'hui ?" class="bg-transparent w-full px-4 md:px-8 py-4 md:py-6 outline-none text-xl md:text-2xl placeholder:text-white/40" onkeypress="if(event.key === 'Enter') performSearch()">
+                <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 md:px-12 py-4 md:py-5 rounded-[2rem] font-extrabold transition-all active:scale-95 shadow-lg shadow-blue-500/30">
+                    Chercher
                 </button>
             </div>
-        </div>
-    </main>
 
-    <main id="info" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg px-4">
-        <div class="glass w-full rounded-[3.5rem] p-12 text-center">
-            <div class="w-32 h-32 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-white text-7xl font-black shadow-2xl rotate-3">G</div>
-            <h2 class="text-4xl font-extrabold italic">Glass Engine</h2>
-            <p class="text-white/60 mt-6 text-lg leading-relaxed px-4 font-medium">L'esthétique de la transparence poussée à son paroxysme.</p>
-            <div class="mt-12 pt-8 border-t border-white/10 grid grid-cols-3 gap-4">
-                <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Version</p><p class="font-bold">2.4.0</p></div>
-                <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Kernel</p><p class="font-bold">Quantum</p></div>
-                <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Latency</p><p class="font-bold text-green-400">12ms</p></div>
+            <div id="search-results-box" class="hidden glass w-full max-w-3xl rounded-[2.5rem] p-8 mb-8 max-h-[400px] overflow-y-auto no-scrollbar animate-fade">
+                <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                    <p class="text-xs uppercase tracking-widest opacity-50 font-bold">Résultats trouvés sur GlassEngine</p>
+                    <button onclick="closeResults()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition">Fermer</button>
+                </div>
+                <div id="results-list" class="space-y-6"></div>
             </div>
-        </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="quickSearch('GlassOS')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">GlassOS</button>
+                <button onclick="quickSearch('Design UI')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Design UI</button>
+                <button onclick="quickSearch('Météo')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Météo</button>
+            </div>
+        </section>
+
+        <section id="settings" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-xl mx-auto px-4">
+            <div class="glass w-full rounded-[3.5rem] p-8 md:p-12">
+                <h2 class="text-4xl font-extrabold mb-10">Interface</h2>
+                
+                <div class="space-y-10">
+                    <div class="flex justify-between items-center bg-white/5 p-6 rounded-[2rem] hover:bg-white/10 transition">
+                        <div>
+                            <p class="font-bold text-lg">Mode Immersion</p>
+                            <p class="text-sm opacity-50">Assombrit l'arrière-plan</p>
+                        </div>
+                        <button onclick="toggleDarkMode()" class="w-16 h-9 bg-gray-600 rounded-full relative transition-colors duration-500" id="toggle-bg">
+                            <div id="toggle-dot" class="absolute left-1 top-1 bg-white w-7 h-7 rounded-full transition-all duration-300"></div>
+                        </button>
+                    </div>
+
+                    <div class="bg-white/5 p-8 rounded-[2rem]">
+                        <p class="font-bold text-lg mb-6">Arrière-plans Premium</p>
+                        <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                            <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200" class="wp-option selected" onclick="changeBG(this.src, this)" alt="BG 1">
+                            <img src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=200" class="wp-option" onclick="changeBG(this.src, this)" alt="BG 2">
+                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200" class="wp-option" onclick="changeBG(this.src, this)" alt="BG 3">
+                            <img src="https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=200" class="wp-option" onclick="changeBG(this.src, this)" alt="BG 4">
+                        </div>
+                    </div>
+
+                    <div class="bg-white/5 p-8 rounded-[2rem]">
+                        <div class="flex justify-between mb-6">
+                            <span class="font-bold text-lg">Densité du flou</span>
+                            <span id="blur-val-display" class="font-mono text-blue-400 font-bold">20px</span>
+                        </div>
+                        <input type="range" min="0" max="80" value="20" class="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer" oninput="updateBlur(this.value)">
+                    </div>
+
+                    <div class="bg-white/5 p-6 rounded-[2rem]">
+                        <p class="font-bold text-lg mb-2">Glass Pad (Notes Volantes)</p>
+                        <p class="text-xs opacity-50 mb-4">Sauvegardé automatiquement dans le système.</p>
+                        <textarea id="glasspad" class="w-full h-28 bg-black/20 text-white rounded-xl p-4 outline-none border border-white/10 text-sm focus:border-blue-500/50 resize-none" placeholder="Écrivez vos notes ici..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="updates" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg mx-auto px-4">
+            <div class="glass w-full rounded-[3.5rem] p-12 text-center">
+                <div id="update-container">
+                    <div class="w-20 h-20 bg-orange-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <span class="text-4xl animate-bounce">🚀</span>
+                    </div>
+                    <h2 class="text-3xl font-bold mb-2">GlassOS 2.0</h2>
+                    <p class="opacity-60 mb-8">Une mise à jour majeure est disponible pour améliorer la fluidité et la sécurité.</p>
+                    
+                    <div id="progress-bar-container" class="hidden w-full bg-white/10 h-4 rounded-full mb-8 overflow-hidden">
+                        <div id="progress-fill" class="h-full bg-blue-500 transition-all duration-300 w-0"></div>
+                    </div>
+
+                    <button onclick="startUpdate()" id="updateBtn" class="w-full bg-white text-black hover:bg-blue-400 hover:text-white py-5 rounded-2xl font-black transition-all transform active:scale-95 shadow-xl">
+                        Installer maintenant
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="info" class="tab-content flex-col items-center justify-center min-h-screen w-full max-w-lg mx-auto px-4">
+            <div class="glass w-full rounded-[3.5rem] p-12 text-center">
+                <div class="w-32 h-32 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-white text-7xl font-black shadow-2xl rotate-3">G</div>
+                <h2 class="text-4xl font-extrabold italic">Glass Engine</h2>
+                <p class="text-white/60 mt-6 text-lg leading-relaxed px-4 font-medium">L'esthétique de la transparence poussée à son paroxysme.</p>
+                <div class="mt-12 pt-8 border-t border-white/10 grid grid-cols-3 gap-4">
+                    <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Version</p><p class="font-bold">2.4.0</p></div>
+                    <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Kernel</p><p class="font-bold">Quantum</p></div>
+                    <div class="text-center"><p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Latency</p><p class="font-bold text-green-400">12ms</p></div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <div id="ai-window" class="glass">
@@ -192,7 +220,7 @@
             <button onclick="toggleAI()" class="opacity-30 hover:opacity-100 transition-opacity">✕</button>
         </div>
         <div id="chat-history" class="flex-1 overflow-y-auto p-6 flex flex-col space-y-4 no-scrollbar">
-            <div class="message bot-msg">Bienvenue. Comment puis-je optimiser votre expérience Glass aujourd'hui ?</div>
+            <div class="message bot-msg">Bienvenue. Demandez-moi n'importe quoi !</div>
         </div>
         <div class="p-6 bg-white/5 border-t border-white/5">
             <div class="relative">
@@ -203,63 +231,114 @@
         </div>
     </div>
 
-    <button onclick="toggleAI()" class="fixed bottom-8 right-8 w-18 h-18 bg-blue-600 p-5 rounded-3xl flex items-center justify-center shadow-2xl hover:scale-110 active:scale-90 transition-all z-[1001] group">
+    <button onclick="toggleAI()" class="fixed bottom-8 right-8 w-16 h-16 bg-blue-600 p-4 rounded-3xl flex items-center justify-center shadow-2xl hover:scale-110 active:scale-90 transition-all z-[1001] group">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
     </button>
 
     <script>
-        // --- Navigation améliorée ---
+        // --- Widget Horloge Active ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('weather-clock').innerText = now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- Glass Pad ---
+        const pad = document.getElementById('glasspad');
+        pad.value = localStorage.getItem('glasspad_data') || "";
+        pad.addEventListener('input', () => {
+            localStorage.setItem('glasspad_data', pad.value);
+        });
+
+        // --- MOTEUR DE RECHERCHE INTERNE (Nouveau) ---
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsBox = document.getElementById('search-results-box');
+            const resultsList = document.getElementById('results-list');
+            
+            if (!query) return;
+
+            // Afficher la box de résultats
+            resultsBox.classList.remove('hidden');
+
+            // Simulation de base de données locale pour la recherche interne
+            const database = [
+                { title: "GlassOS - Le futur de l'interface", desc: "Découvrez le kernel Quantum et la fluidité incroyable des fenêtres transparentes de la version 2.4.0.", link: "#" },
+                { title: "Tendances UI/UX Design", desc: "Le Glassmorphism est à son paroxysme cette année. Apprenez à maîtriser le flou d'arrière-plan.", link: "#" },
+                { title: "Météo Paris & Île-de-France", desc: "Grand soleil sur la capitale aujourd'hui. Températures douces de 22°C enregistrées par le système.", link: "#" },
+                { title: "Intelligence Artificielle intégrée", desc: "Glass Assistant v4 est capable d'interagir directement avec votre système via des commandes textuelles.", link: "#" }
+            ];
+
+            // Filtrage des résultats ou génération dynamique par défaut
+            let htmlResults = database
+                .filter(item => item.title.toLowerCase().includes(query.toLowerCase()) || item.desc.toLowerCase().includes(query.toLowerCase()));
+
+            if (htmlResults.length === 0) {
+                // Si rien ne correspond, on génère un résultat personnalisé dynamique au lieu d'un écran vide
+                htmlResults = [{
+                    title: `Résultat pour : "${query}"`,
+                    desc: `Ceci est une simulation de résultat interne pour votre recherche sur le réseau local GlassOS. Aucun transfert vers Google n'a été effectué.`,
+                    link: "#"
+                }];
+            }
+
+            // Injection des résultats dans le DOM avec le style Glassmorphism
+            resultsList.innerHTML = htmlResults.map(item => `
+                <div class="bg-white/5 p-5 rounded-2xl hover:bg-white/10 transition border border-white/5">
+                    <a href="${item.link}" class="text-xl font-bold text-blue-400 hover:underline block mb-2">${item.title}</a>
+                    <p class="text-sm text-white/70 leading-relaxed">${item.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        function quickSearch(text) {
+            document.getElementById('searchInput').value = text;
+            performSearch();
+        }
+
+        function closeResults() {
+            document.getElementById('search-results-box').classList.add('hidden');
+        }
+
+        // --- Système de Navigation Corrigé ---
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => {
                 c.classList.remove('active');
+                c.style.display = 'none';
             });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             
             const target = document.getElementById(tabId);
             target.classList.add('active');
+            target.style.display = 'flex'; 
+            
             document.getElementById('btn-' + tabId).classList.add('active');
-
-            if(tabId === 'search') {
-                setTimeout(() => document.getElementById('searchInput').focus(), 100);
-            }
+            closeResults(); // Ferme les recherches passées si on change d'onglet
         }
 
-        // --- Recherche ---
-        function performSearch() {
-            const query = document.getElementById('searchInput').value;
-            if (query.trim()) {
-                // Animation de sortie avant redirection
-                document.getElementById('search').style.opacity = '0';
-                document.getElementById('search').style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-                }, 400);
-            }
-        }
-
-        function quickSearch(target) {
-            document.getElementById('searchInput').value = target;
-            performSearch();
-        }
-
-        // --- Personnalisation ---
+        // --- Personnalisation & Système ---
         function changeBG(url, el) {
             const highResUrl = url.split('?')[0] + '?q=80&w=2070&auto=format&fit=crop';
             document.body.style.backgroundImage = `url('${highResUrl}')`;
-            document.querySelectorAll('.wp-option').forEach(img => img.classList.remove('selected'));
-            el.classList.add('selected');
+            if(el) {
+                document.querySelectorAll('.wp-option').forEach(img => img.classList.remove('selected'));
+                el.classList.add('selected');
+            }
         }
 
         let isDark = false;
         function toggleDarkMode() {
             isDark = !isDark;
-            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('dark-mode', isDark);
             const dot = document.getElementById('toggle-dot');
             const bg = document.getElementById('toggle-bg');
-            dot.style.transform = isDark ? 'translateX(28px)' : 'translateX(0px)';
-            bg.style.backgroundColor = isDark ? '#3b82f6' : '#4b5563';
+            if(dot && bg) {
+                dot.style.transform = isDark ? 'translateX(28px)' : 'translateX(0px)';
+                bg.style.backgroundColor = isDark ? '#3b82f6' : '#4b5563';
+            }
         }
 
         function updateBlur(val) {
@@ -267,7 +346,6 @@
             document.getElementById('blur-val-display').innerText = val + 'px';
         }
 
-        // --- Système de Mise à jour (Simulation réelle) ---
         function startUpdate() {
             const btn = document.getElementById('updateBtn');
             const progressContainer = document.getElementById('progress-bar-container');
@@ -278,7 +356,7 @@
             
             let progress = 0;
             const interval = setInterval(() => {
-                progress += Math.random() * 15;
+                progress += Math.random() * 12;
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
@@ -288,12 +366,13 @@
                             <h2 class="text-3xl font-bold">Système Optimisé</h2>
                             <p class="opacity-60">GlassOS est à jour (v2.0.1)</p>
                         `;
-                        document.getElementById('btn-updates').classList.replace('text-orange-400', 'text-green-400');
-                        document.getElementById('btn-updates').innerText = "À jour";
+                        const updateNavBtn = document.getElementById('btn-updates');
+                        updateNavBtn.classList.replace('text-orange-400', 'text-green-400');
+                        updateNavBtn.innerText = "À jour";
                     }, 500);
                 }
                 progressFill.style.width = progress + '%';
-            }, 400);
+            }, 250);
         }
 
         // --- IA Chat ---
@@ -314,31 +393,42 @@
                 userDiv.textContent = text;
                 history.appendChild(userDiv);
                 input.value = "";
-                history.scrollTop = history.scrollHeight;
+                
+                history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
 
-                // Effet "Thinking"
                 const typingDiv = document.createElement('div');
                 typingDiv.className = 'message bot-msg italic opacity-50';
                 typingDiv.textContent = "Analyse en cours...";
-                history.appendChild(typingDiv);
+                setTimeout(() => history.appendChild(typingDiv), 200);
 
                 setTimeout(() => {
                     history.removeChild(typingDiv);
                     const botDiv = document.createElement('div');
                     botDiv.className = 'message bot-msg font-medium';
-                    botDiv.textContent = generateAIResponse(text);
+                    botDiv.textContent = processAICommand(text);
                     history.appendChild(botDiv);
-                    history.scrollTop = history.scrollHeight;
-                }, 1200);
+                    history.scrollTo({ top: history.scrollHeight, behavior: 'smooth' });
+                }, 1000);
             }
         }
 
-        function generateAIResponse(input) {
-            input = input.toLowerCase();
-            if (input.includes("bonjour") || input.includes("hello")) return "Bonjour. Je suis prêt à traiter vos requêtes.";
-            if (input.includes("fond") || input.includes("design")) return "L'esthétique peut être ajustée dans les Réglages. Préférez-vous le minimalisme ?";
-            if (input.includes("merci")) return "À votre service.";
-            return "Commande reconnue. Voulez-vous que j'approfondisse cette recherche sur le réseau ?";
+        function processAICommand(input) {
+            const cmd = input.toLowerCase();
+            if (cmd.includes("dark") || cmd.includes("immersion") || cmd.includes("sombre")) {
+                toggleDarkMode();
+                return "J'ai modifié le statut du mode immersion pour vous.";
+            }
+            if (cmd.includes("blur")) {
+                const match = cmd.match(/\d+/);
+                if(match) {
+                    updateBlur(match[0]);
+                    return `Flou ajusté à ${match[0]}px selon vos ordres.`;
+                }
+            }
+            if (cmd.includes("bonjour") || cmd.includes("hello")) return "Bonjour ! Je suis paré. Donnez-moi un ordre.";
+            if (cmd.includes("merci")) return "Toujours là pour optimiser GlassOS.";
+            
+            return "Commande ou question reçue. Je reste à votre entière disposition sur le réseau Glass.";
         }
     </script>
 </body>
