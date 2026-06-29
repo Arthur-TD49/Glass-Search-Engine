@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glass Search Engine Pro - Internal Edition</title>
+    <title>Glass Search Engine Pro - Exclusive Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -112,26 +112,22 @@
             <h1 class="text-7xl md:text-9xl font-extrabold mb-14 drop-shadow-2xl tracking-tighter select-none text-center">
                 Glass<span class="text-blue-400 animate-pulse">.</span>
             </h1>
-            
-            <div class="glass w-full max-w-3xl rounded-[2.8rem] flex items-center p-3 group transition-all duration-500 focus-within:ring-4 ring-blue-500/20 shadow-2xl mb-6">
+            <div class="glass w-full max-w-3xl rounded-[2.8rem] flex items-center p-3 group transition-all duration-500 focus-within:ring-4 ring-blue-500/20 shadow-2xl mb-4">
                 <input type="text" id="searchInput" autofocus placeholder="Que cherchez-vous aujourd'hui ?" class="bg-transparent w-full px-4 md:px-8 py-4 md:py-6 outline-none text-xl md:text-2xl placeholder:text-white/40" onkeypress="if(event.key === 'Enter') performSearch()">
                 <button onclick="performSearch()" class="bg-blue-500 hover:bg-blue-400 text-white px-6 md:px-12 py-4 md:py-5 rounded-[2rem] font-extrabold transition-all active:scale-95 shadow-lg shadow-blue-500/30">
-                    Chercher
+                    Lancer
                 </button>
             </div>
 
-            <div id="search-results-box" class="hidden glass w-full max-w-3xl rounded-[2.5rem] p-8 mb-8 max-h-[400px] overflow-y-auto no-scrollbar animate-fade">
-                <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                    <p class="text-xs uppercase tracking-widest opacity-50 font-bold">Résultats trouvés sur GlassEngine</p>
-                    <button onclick="closeResults()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition">Fermer</button>
-                </div>
-                <div id="results-list" class="space-y-6"></div>
+            <div id="search-suggestions" class="hidden glass w-full max-w-2xl rounded-2xl p-4 mb-6 text-sm text-white/80 animate-fade">
+                <p class="text-xs opacity-40 uppercase tracking-widest font-bold mb-2 pl-2">Suggestions IA</p>
+                <div id="suggestions-list" class="space-y-1"></div>
             </div>
 
-            <div class="flex flex-wrap justify-center gap-4">
-                <button onclick="quickSearch('GlassOS')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">GlassOS</button>
-                <button onclick="quickSearch('Design UI')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Design UI</button>
-                <button onclick="quickSearch('Météo')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Météo</button>
+            <div class="flex flex-wrap justify-center gap-4 mt-6">
+                <button onclick="quickSearch('google')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Google</button>
+                <button onclick="quickSearch('youtube')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">YouTube</button>
+                <button onclick="quickSearch('dribbble')" class="glass px-8 py-3 rounded-full text-sm font-semibold hover:bg-white/20 transition">Dribbble</button>
             </div>
         </section>
 
@@ -220,7 +216,7 @@
             <button onclick="toggleAI()" class="opacity-30 hover:opacity-100 transition-opacity">✕</button>
         </div>
         <div id="chat-history" class="flex-1 overflow-y-auto p-6 flex flex-col space-y-4 no-scrollbar">
-            <div class="message bot-msg">Bienvenue. Demandez-moi n'importe quoi !</div>
+            <div class="message bot-msg">Bienvenue. Essayez de taper <span class="text-blue-400 font-bold">"dark"</span> ou <span class="text-blue-400 font-bold">"blur 50"</span> pour contrôler l'OS !</div>
         </div>
         <div class="p-6 bg-white/5 border-t border-white/5">
             <div class="relative">
@@ -253,70 +249,85 @@
             localStorage.setItem('glasspad_data', pad.value);
         });
 
-        // --- MOTEUR DE RECHERCHE INTERNE (Nouveau) ---
-        function performSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-            const resultsBox = document.getElementById('search-results-box');
-            const resultsList = document.getElementById('results-list');
+        // --- Suggestions de recherche ---
+        const searchInput = document.getElementById('searchInput');
+        const sugBox = document.getElementById('search-suggestions');
+        const sugList = document.getElementById('suggestions-list');
+
+        searchInput.addEventListener('input', () => {
+            const text = searchInput.value.trim();
+            if(text.length < 2) {
+                sugBox.classList.add('hidden');
+                return;
+            }
+            sugBox.classList.remove('hidden');
             
-            if (!query) return;
-
-            // Afficher la box de résultats
-            resultsBox.classList.remove('hidden');
-
-            // Simulation de base de données locale pour la recherche interne
-            const database = [
-                { title: "GlassOS - Le futur de l'interface", desc: "Découvrez le kernel Quantum et la fluidité incroyable des fenêtres transparentes de la version 2.4.0.", link: "#" },
-                { title: "Tendances UI/UX Design", desc: "Le Glassmorphism est à son paroxysme cette année. Apprenez à maîtriser le flou d'arrière-plan.", link: "#" },
-                { title: "Météo Paris & Île-de-France", desc: "Grand soleil sur la capitale aujourd'hui. Températures douces de 22°C enregistrées par le système.", link: "#" },
-                { title: "Intelligence Artificielle intégrée", desc: "Glass Assistant v4 est capable d'interagir directement avec votre système via des commandes textuelles.", link: "#" }
+            const mockSuggestions = [
+                `${text} tendances`,
+                `tutoriel sur ${text}`,
+                `${text} définition`
             ];
 
-            // Filtrage des résultats ou génération dynamique par défaut
-            let htmlResults = database
-                .filter(item => item.title.toLowerCase().includes(query.toLowerCase()) || item.desc.toLowerCase().includes(query.toLowerCase()));
-
-            if (htmlResults.length === 0) {
-                // Si rien ne correspond, on génère un résultat personnalisé dynamique au lieu d'un écran vide
-                htmlResults = [{
-                    title: `Résultat pour : "${query}"`,
-                    desc: `Ceci est une simulation de résultat interne pour votre recherche sur le réseau local GlassOS. Aucun transfert vers Google n'a été effectué.`,
-                    link: "#"
-                }];
-            }
-
-            // Injection des résultats dans le DOM avec le style Glassmorphism
-            resultsList.innerHTML = htmlResults.map(item => `
-                <div class="bg-white/5 p-5 rounded-2xl hover:bg-white/10 transition border border-white/5">
-                    <a href="${item.link}" class="text-xl font-bold text-blue-400 hover:underline block mb-2">${item.title}</a>
-                    <p class="text-sm text-white/70 leading-relaxed">${item.desc}</p>
+            sugList.innerHTML = mockSuggestions.map(s => `
+                <div onclick="applySuggestion('${s}')" class="px-3 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition font-medium">
+                    🔍 &nbsp; ${s}
                 </div>
             `).join('');
-        }
+        });
 
-        function quickSearch(text) {
-            document.getElementById('searchInput').value = text;
+        function applySuggestion(val) {
+            searchInput.value = val;
+            sugBox.classList.add('hidden');
             performSearch();
-        }
-
-        function closeResults() {
-            document.getElementById('search-results-box').classList.add('hidden');
         }
 
         // --- Système de Navigation Corrigé ---
         function showTab(tabId) {
+            // Masquer tous les contenus de manière stricte
             document.querySelectorAll('.tab-content').forEach(c => {
                 c.classList.remove('active');
                 c.style.display = 'none';
             });
+            
+            // Retirer l'état actif des boutons
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             
+            // Activer l'onglet sélectionné
             const target = document.getElementById(tabId);
             target.classList.add('active');
-            target.style.display = 'flex'; 
+            target.style.display = 'flex'; // Forcer l'affichage flexbox pour le centrage vertical
             
             document.getElementById('btn-' + tabId).classList.add('active');
-            closeResults(); // Ferme les recherches passées si on change d'onglet
+
+            if(tabId === 'search') {
+                setTimeout(() => searchInput.focus(), 100);
+            }
+        }
+
+        // --- Moteurs de recherche ---
+        function performSearch() {
+            const query = searchInput.value.trim();
+            if (query) {
+                document.getElementById('search').style.opacity = '0';
+                document.getElementById('search').style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                }, 300);
+            }
+        }
+
+        function quickSearch(engine) {
+            const query = searchInput.value.trim();
+            if (!query) {
+                const urls = { google: "https://www.google.com", youtube: "https://www.youtube.com", dribbble: "https://dribbble.com" };
+                window.location.href = urls[engine];
+                return;
+            }
+            let url = "";
+            if (engine === 'google') url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            if (engine === 'youtube') url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+            if (engine === 'dribbble') url = `https://dribbble.com/search/${encodeURIComponent(query)}`;
+            window.location.href = url;
         }
 
         // --- Personnalisation & Système ---
